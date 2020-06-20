@@ -11,7 +11,10 @@
 			"skipFiles": [
 				"<node_internals>/**"
 			],
-			"program": "${workspaceFolder}/service/main.js"
+			"program": "${workspaceFolder}/service/main.js",
+			"runtimeArgs": [
+				"--es-module-specifier-resolution=node"
+			]
 		}
 	]
 }

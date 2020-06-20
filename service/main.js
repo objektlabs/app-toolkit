@@ -1,9 +1,13 @@
-import http from 'http';
+import WebServer from './framework/WebServer';
 
-http.createServer(function (req, res) {
+import getPosts from './handlers/getPosts';
 
-	res.writeHead(200, {'Content-Type': 'text/html'});
 
-	res.end('Hello World');
+// 
+const webServer = new WebServer(8080);
 
-}).listen(8080);
+
+
+webServer.registerEndpoint('GET', '/', getPosts);
+
+webServer.start();
