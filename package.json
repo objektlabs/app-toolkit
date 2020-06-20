@@ -1,23 +1,22 @@
 {
-  "name": "app-toolkit",
-  "version": "1.0.0",
-  "description": "An enterprise-grade app development runtime for startups, students & enthusiasts.",
-  "main": "service/service.js",
-  "scripts": {
-    "app": "echo \"TODO\"",
-    "service": "node service/main.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/objektlabs/app-toolkit.git"
-  },
-  "author": "ObjektLabs.io",
-  "type": "module",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/objektlabs/app-toolkit/issues"
-  },
-  "homepage": "https://github.com/objektlabs/app-toolkit#readme",
-  "devDependencies": {}
+	"name": "app-toolkit",
+	"version": "1.0.0",
+	"description": "An enterprise-grade app development runtime for startups, students & enthusiasts.",
+	"main": "service/service.js",
+	"scripts": {
+		"app": "echo \"TODO\"",
+		"service": "node service/main.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/objektlabs/app-toolkit.git"
+	},
+	"author": "ObjektLabs.io",
+	"type": "module",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/objektlabs/app-toolkit/issues"
+	},
+	"homepage": "https://github.com/objektlabs/app-toolkit#readme"
 }
