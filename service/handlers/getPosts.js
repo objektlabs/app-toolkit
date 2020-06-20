@@ -9,7 +9,9 @@ export default async (req) => {
 
 	return {
 		code: 200,
-		headers: { 'Content-Type': 'application/json' },
+		headers: { 
+			'Content-Type': 'application/json'
+		},
 		body: {
 			posts: posts
 		}

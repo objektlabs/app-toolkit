@@ -8,12 +8,12 @@ export default class WebServer {
 
 		this._endpoints = [];
 
-		this._instance = http.createServer(this._handleRequest.bind(this)).listen(8080);
+		this._instance = http.createServer(this._handleRequest.bind(this));
 	}
 
 	start() {
 		
-		//this._instance.listen(this.port);
+		this._instance.listen(this.port);
 	}
 
 	stop() {
@@ -38,7 +38,7 @@ export default class WebServer {
 
 	async _handleRequest(request, response) {
 
-		let endpoint = this._endpoints.find(item => {
+		const endpoint = this._endpoints.find(item => {
 
 			if(item.method.toUpperCase() !== request.method.toUpperCase()) {
 				return false;
@@ -50,10 +50,15 @@ export default class WebServer {
 			}
 		});
 
-		let result = await endpoint.handler(request);
+		const result = await endpoint.handler(request);
 
 		response.statusCode = result.code;
-		//response.setHeader(result.headers);
+
+		for (const header in result.headers) {
+			response.setHeader(header, result.headers[header]);
+		}
+
+		// TODO: Stringify response body according to Content-Type header, if not already in acceptable format (string / Buffer).
 
 		response.end(JSON.stringify(result.body));
 	}
