@@ -1,4 +1,41 @@
+/**
+ * A model class representing a blog post.
+ */
 export default class Post {
+
+	//#region Properties
+
+	/**
+	 * The unique post ID.
+	 * 
+	 * @type {number}
+	 */
+	id = null;
+
+	/**
+	 * The post title.
+	 * 
+	 * @type {string}
+	 */
+	title = null;
+
+	/**
+	 * The post content body.
+	 * 
+	 * @type {string}
+	 */
+	body = null;
+
+	/**
+	 * The ID of the user who made the post.
+	 * 
+	 * @type {string}
+	 */
+	userId = null;
+
+	//#endregion
+
+	//#region Constructors
 
 	constructor(id, title, body, userId) {
 
@@ -8,35 +45,5 @@ export default class Post {
 		this.userId = userId;
 	}
 
-	get id() {
-		return this._id;
-	}
-
-	set id(value) {
-		this._id = value;
-	}
-
-	get title() {
-		return this._title;
-	}
-
-	set title(value) {
-		this._title = value;
-	}
-
-	get body() {
-		return this._body;
-	}
-
-	set body(value) {
-		this._body = value;
-	}
-
-	get userId() {
-		return this._userId;
-	}
-
-	set userId(value) {
-		this._userId = value;
-	}
+	//#endregion
 }

@@ -1,65 +1,267 @@
 import http from 'http';
+import querystring from 'querystring';
+import Stream from 'stream';
 
-export default class WebServer {
+import { APIEndpoint, HttpResponse } from "./models";
 
+/**
+ * A native NodeJS implementation of an HTTP web server allowing for API & WebSocket endpoints to be registered and executed.
+ */
+class WebServer {
+
+	//#region Properties
+
+	/**
+	 * The port the server should run on.
+	 * 
+	 * @type {number}
+	 */
+	port = null;
+
+	/**
+	 * The list of endpoints that the server can execute.
+	 * @type {APIEndpoint[]}
+	 */
+	#endpoints = null;
+
+	/**
+	 * The port the server should run on.
+	 * 
+	 * @type {http.Server}
+	 */
+	#instance = null;
+
+	//#endregion
+
+	//#region Constructors
+
+	/**
+	 * Initialises the web server.
+	 * 
+	 * @param {number} port - The port number to run the web server on.
+	 */
 	constructor(port) {
 
 		this.port = port;
 
-		this._endpoints = [];
+		this.#endpoints = [];
 
-		this._instance = http.createServer(this._handleRequest.bind(this));
+		this.#instance = http.createServer(this._handleAPIRequest.bind(this));
+
+		// See this URL for socket implementation.
+		// https://medium.com/hackernoon/implementing-a-websocket-server-with-node-js-d9b78ec5ffa8
+		/*
+		this.#instance.on('upgrade', (req, socket) => {
+			// Make sure that we only handle WebSocket upgrade requests
+			if (req.headers['upgrade'] !== 'websocket') {
+				socket.end('HTTP/1.1 400 Bad Request');
+				return;
+			}
+			// More to come…
+
+			socket.on('data', buffer => {
+
+				//
+				if(buffer.toString.startsWith("[ask_question]") {
+
+				}
+			});
+		});
+		*/
 	}
 
+	//#endregion
+
+	//#region Server Control Handlers
+
+	/**
+	 * Start listening for requests on the web server.
+	 * 
+	 * @returns {void}
+	 */
 	start() {
 		
-		this._instance.listen(this.port);
-	}
-
-	stop() {
-
-		this._instance.close();
-	}
-
-	registerEndpoint(method, uri, handler) {
-
-		this._endpoints.push({
-			method: method,
-			uri: uri,
-			handler: handler
-		});
+		this.#instance.listen(this.port);
 	}
 
 	/**
+	 * Stop listening for web server requests.
 	 * 
-	 * @param {http.ClientRequest} request -
-	 * @param {http.ServerResponse} response - 
+	 * @returns {void}
 	 */
+	stop() {
 
-	async _handleRequest(request, response) {
+		this.#instance.close();
+	}
 
-		const endpoint = this._endpoints.find(item => {
+	//#endregion
 
-			if(item.method.toUpperCase() !== request.method.toUpperCase()) {
+	//#region API Endpoint Handlers
+
+	/**
+	 * Registers an API endpoint that the web server can execute.
+	 * 
+	 * @param {APIEndpoint} endpoint - The API endpoint to register.
+	 * 
+	 * @returns {void}
+	 */
+	addAPIEndpoint(endpoint) {
+
+		this.#endpoints.push(endpoint);
+	}
+
+	/**
+	 * Remove a given API endpoint from the registered list of endpoints.
+	 * 
+	 * @param {APIEndpoint} endpoint - The API endpoint to remove.
+	 * 
+	 * @returns {void}
+	 */
+	removeAPIEndpoint(endpoint) {
+
+		this.#endpoints = this.#endpoints.filter(item => item !== endpoint);
+	}
+
+	/**
+	 * Process incomming API requests by interpreting the request and executing a registered API endpoint matching the request detail, writing the result to a HTTP response.
+	 * 
+	 * @param {http.IncomingMessage} request - The incomming HTTP request.
+	 * @param {http.ServerResponse} response - The outgoing HTTP response.
+	 * 
+	 * @returns {void}
+	 */
+	async _handleAPIRequest(request, response) {
+
+		// Get the base request URI, excluding query parameters.
+		let requestURI = request.url;
+
+		let queryStringIndex = requestURI.indexOf('?');
+
+		if(queryStringIndex > -1) {
+			requestURI = requestURI.substring(0, queryStringIndex);
+		}
+
+		// Attempt to lookup a registered endpoint matching the received request pattern.
+		const matchedEndpoint = this.#endpoints.find(endpoint => {
+
+			// Check that the endpoint and request methods match.
+			if(endpoint.method.toUpperCase() !== request.method.toUpperCase()) {
 				return false;
 			}
 
-			// TODO - Match URI
-			if(true) {
-				return true;
+			// Check that the endpoint and request URI parts are equal.
+			const requestURIParts = requestURI.split('/');
+			const endpointURIParts = endpoint.uri.split('/');
+
+			if(requestURIParts.length != endpointURIParts.length) {
+				return false;
 			}
+
+			// Check that the endpoint and request URI parts match at each index (ignoring variable parts, e.g. {variable}).
+			for(let i = 0; i < requestURIParts.length; i++) {
+
+				let isVariable = endpointURIParts[i].startsWith('{') && endpointURIParts[i].endsWith('}');
+
+				if(!isVariable) {
+					
+					if(requestURIParts[i].toLowerCase() !== endpointURIParts[i].toLowerCase()) {
+						return false;
+					}
+				}
+			}
+
+			return true;
 		});
 
-		const result = await endpoint.handler(request);
+		// Send a not found response if no registered endpoint could be found.
+		if(!matchedEndpoint) {
 
-		response.statusCode = result.code;
+			response.statusCode = 404;
+			response.end();
 
-		for (const header in result.headers) {
-			response.setHeader(header, result.headers[header]);
+			return;
 		}
 
-		// TODO: Stringify response body according to Content-Type header, if not already in acceptable format (string / Buffer).
+		// Clean up the HTTP request.
+		if(queryStringIndex > -1) {
+			request.query = querystring.parse(request.url.substring(queryStringIndex + 1));
+		} else {
+			request.query = {};
+		}
 
-		response.end(JSON.stringify(result.body));
+		// Execute the found endpoint handler function.
+		const result = await matchedEndpoint.handler(request);
+
+		// Handler did not return any value, send empty content as the response.
+		if(!result) {
+			
+			response.statusCode = 204;
+			response.end();
+
+			return;
+		}
+		
+		// Process the handler function result as an HTTP response.
+		if(result instanceof HttpResponse) {
+
+			// Set the HTTP response status code (default to OK or Empty Content).
+			response.statusCode = result.statusCode || (result.body ? 200 : 204);
+	
+			// Set the HTTP response headers.
+			for (const header in result.headers) {
+				response.setHeader(header, result.headers[header]);
+			}
+
+			// Set the HTTP response body (if set).
+			let bodyContent = null;
+			let contentType = null;
+
+			if(result.body) {
+
+				// Pipe the handler result to the HTTP response if it is a streaming result type.
+				if(result.body instanceof Stream.Readable) {
+
+					response.setHeader('Content-Type', 'application/octet-stream');
+					response.pipe(result.body);
+
+					return;
+				}
+
+				// For all other result types, try to parse the result to the given content type.
+				let contentTypeHeaderKey = Object.keys(result.headers).find(item => item.toLowerCase() === 'content-type');
+				
+				contentType = result.headers[contentTypeHeaderKey];
+
+				switch((contentType || '').toLowerCase()) {
+
+					case 'application/json':
+						bodyContent = JSON.stringify(result.body);
+						break;
+
+					default:
+						bodyContent = result.body;
+						break;
+				}
+			}
+
+			// Send & close the HTTP response.
+			response.end(bodyContent);
+
+			return;
+		}
+
+		// Handler returned a malformed or invalid response, send back an internal server error.
+		response.statusCode = 500;
+		response.end('Unsupported response supplied by endpoint handler, please review handler implementation.');
 	}
+
+	//#endregion
+
+	//#region Socket Endpoint Handlers
+
+
+
+	//#endregion
 }
+
+export { WebServer as default, WebServer }

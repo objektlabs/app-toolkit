@@ -1,20 +1,23 @@
-export default class APIEndpoint {
+/**
+ * A model representing an API endpoint and it's handler function.
+ */
+class APIEndpoint {
 
 	//#region Properties
 
 	/**
-	 * The HTTP method on which the endpoint must be exposed.
+	 * The HTTP method on which the endpoint must be exposed, e.g. GET, PUT, POST, etc.
 	 * 
 	 * @type {string}
 	 */
 	method = null;
 
 	/**
-	 * The URL method on which the endpoint must be exposed.
+	 * The URL path template on which the endpoint must be exposed, e.g. /posts/{id}.
 	 * 
 	 * @type {string}
 	 */
-	url = null;
+	uri = null;
 
 	/**
 	 * The function to execute when the endpoint is invoked.
@@ -36,3 +39,5 @@ export default class APIEndpoint {
 
 	//#endregion
 }
+
+export { APIEndpoint as default, APIEndpoint }
