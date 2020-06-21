@@ -419,7 +419,7 @@ class HttpClient {
 				// No need to signal the end of the http request as it will be triggerred on the end of the FormData stream.
 				// this.formData.pipe(httpRequest);
 
-				reject(new Error('formData not supported yet')); // TODO: support formData
+				reject(new HttpError('formData not supported yet')); // TODO: support formData
 
 			} else {
 
