@@ -1,5 +1,6 @@
 import http from 'http';
 
+import HttpClient from '../framework/HttpClient';
 import HttpResponse from '../framework/models/HttpResponse';
 
 import Post from '../models/Post';
@@ -13,10 +14,15 @@ import Post from '../models/Post';
  */
 export default async (req) => {
 
-	const posts = [
-		new Post(1, 'Hello', 'World', 2),
-		new Post(3, 'Test', 'Post', 4)
-	];
+	let posts = null;
+
+	try {
+		posts = await HttpClient.get('https://jsonplaceholder.typicode.com/posts').json();
+
+	} catch(error) {
+
+		return new HttpResponse({ statusCode: 418, body: 'something bad happened - unable to get posts from typicode API' });
+	}
 
 	return new HttpResponse({ body: posts });
 }

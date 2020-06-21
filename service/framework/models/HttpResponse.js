@@ -30,7 +30,7 @@ class HttpResponse {
 	
 	//#region Constructors
 
-	constructor({body, statusCode = 200, headers = { 'Content-Type': 'application/json' }} = {}) {
+	constructor({ body, statusCode = 200, headers = { 'Content-Type': 'application/json' } } = {}) {
 
 		this.body = body;
 		this.statusCode = statusCode;
