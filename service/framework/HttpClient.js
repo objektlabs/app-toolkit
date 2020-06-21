@@ -432,8 +432,4 @@ class HttpClient {
 	//#endregion
 }
 
-// ----------------------
-// EXPORT MODULE FEATURES
-// ----------------------
-
 export { HttpClient as default, HttpClient }
