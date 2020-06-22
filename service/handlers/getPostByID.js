@@ -1,8 +1,9 @@
 import http from 'http';
 
+import HttpClient from '../framework/HttpClient';
+import * as HttpHeaders from '../framework/HttpHeaders';
 import HttpResponse from '../framework/models/HttpResponse';
-
-import Post from '../models/Post';
+import * as MimeTypes from '../framework/MimeTypes';
 
 /**
  * Look up specific blog post.
@@ -13,7 +14,19 @@ import Post from '../models/Post';
  */
 export default async (req) => {
 
-	const post = new Post(1, 'Hello', 'World', 2);
+	let post = null;
 
-	return new HttpResponse({ body: post, statusCode: 500 });
+	try {
+		post = await HttpClient.get(`https://jsonplaceholder.typicode.com/posts/${req.path.postId}`,{
+			headers: {
+				[HttpHeaders.ACCEPT]: MimeTypes.APLLICATION_JSON
+			}
+		}).json();
+
+	} catch(error) {
+
+		return new HttpResponse({ statusCode: 418, body: 'something bad happened - unable to get post from typicode API' });
+	}
+
+	return new HttpResponse({ body: post.body });
 }

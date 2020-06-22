@@ -246,10 +246,7 @@ class HttpClient {
 		const response = await this._fetch();
 
 		try {
-
-			throw new Error('asd')
 			response.body = JSON.parse(response.body);
-
 		} catch(error) {
 			throw new HttpError(`Unable to parse response body as JSON '${error.message}'`, response);
 		}

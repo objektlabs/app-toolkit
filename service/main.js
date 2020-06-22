@@ -7,7 +7,7 @@ import getPostByID from './handlers/getPostByID';
 const webServer = new WebServer(8080);
 
 webServer.addAPIEndpoint(new APIEndpoint('GET', '/posts', getPosts));
-webServer.addAPIEndpoint(new APIEndpoint('GET', '/posts/{id}', getPostByID));
+webServer.addAPIEndpoint(new APIEndpoint('GET', '/posts/{postId}', getPostByID));
 
 //webServer.addSocketEndpoint(new SocketEndpoint('ask_question', handleSocket));
 

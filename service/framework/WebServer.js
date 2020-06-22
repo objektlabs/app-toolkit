@@ -141,6 +141,10 @@ class WebServer {
 			requestURI = requestURI.substring(0, queryStringIndex);
 		}
 
+		// Default additional properties on request object.
+		request.path = {};
+		request.query = {};
+
 		// Attempt to lookup a registered endpoint matching the received request pattern.
 		const matchedEndpoint = this.#endpoints.find(endpoint => {
 
@@ -167,13 +171,17 @@ class WebServer {
 					if(requestURIParts[i].toLowerCase() !== endpointURIParts[i].toLowerCase()) {
 						return false;
 					}
+
+				} else { // It's a path variable, we better populate it on the request object so that it's available to the user.
+
+					request.path[endpointURIParts[i].substring(1, endpointURIParts[i].length - 1)] = requestURIParts[i];
 				}
 			}
 
 			return true;
 		});
 
-		// Send a not found response if no registered endpoint could be found.
+		// Send a not found response if there's no registered endpoint matching the request.
 		if(!matchedEndpoint) {
 
 			response.statusCode = 404;
@@ -182,11 +190,9 @@ class WebServer {
 			return;
 		}
 
-		// Clean up the HTTP request.
+		// Parse query strings that may be present on the incoming request.
 		if(queryStringIndex > -1) {
 			request.query = querystring.parse(request.url.substring(queryStringIndex + 1));
-		} else {
-			request.query = {};
 		}
 
 		// Execute the found endpoint handler function.

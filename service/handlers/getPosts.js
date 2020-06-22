@@ -30,5 +30,5 @@ export default async (req) => {
 		return new HttpResponse({ statusCode: 418, body: 'something bad happened - unable to get posts from typicode API' });
 	}
 
-	return new HttpResponse({ body: posts });
+	return new HttpResponse({ body: posts.body });
 }
